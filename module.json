@@ -1,0 +1,13 @@
+{
+    "name": "billing",
+    "hash_id": "8efddba5be8a3064ecbb16a7386d49cb",
+    "description": "Comprehensive Billing & Points Management Module for Admin, Resellers, and Sub-Resellers",
+    "version": "1.0.0",
+    "requires_core": ">=2.6.1",
+    "environment": "main",
+    "dependencies": [],
+    "optional_dependencies": [],
+    "has_navbar": true,
+    "has_settings": false,
+    "priority": 0
+}
