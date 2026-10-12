@@ -42,11 +42,11 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 	}
 
 	public function getVersion(): string {
-		return '1.0.3';
+		return '1.1.0';
 	}
 
 	public function boot(ServiceContainer $container): void {
-		// Module container bindings if needed
+		BillingTranslator::init();
 	}
 
 	/**
@@ -165,38 +165,38 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 	public function registerNavbar(NavbarRegistry $registry): void {
 		$registry->add((new NavbarItem('billing'))
 			->url('#')
-			->label('', 'Billing & Points')
+			->label('billing_common_nav_billing', 'Billing & Points')
 			->icon('ti tabler-credit-card')
 			->order(350));
 
 		$registry->add((new NavbarItem('billing.overview'))
 			->parent('billing')
 			->url('billing')
-			->label('', 'Overview & Stats')
+			->label('billing_admin_nav_overview', 'Overview & Stats')
 			->order(10));
 
 		$registry->add((new NavbarItem('billing.resellers'))
 			->parent('billing')
 			->url('billing_resellers')
-			->label('', 'Resellers Directory')
+			->label('billing_admin_nav_resellers', 'Resellers Directory')
 			->order(20));
 
 		$registry->add((new NavbarItem('billing.orders'))
 			->parent('billing')
 			->url('billing_orders')
-			->label('', 'All Orders')
+			->label('billing_admin_nav_orders', 'All Orders')
 			->order(30));
 
 		$registry->add((new NavbarItem('billing.admin_methods'))
 			->parent('billing')
 			->url('billing_methods?type=admin')
-			->label('', 'Admin Methods')
+			->label('billing_admin_nav_methods_admin', 'Admin Methods')
 			->order(40));
 
 		$registry->add((new NavbarItem('billing.reseller_methods'))
 			->parent('billing')
 			->url('billing_methods?type=reseller')
-			->label('', 'Reseller Methods')
+			->label('billing_admin_nav_methods_reseller', 'Reseller Methods')
 			->order(45));
 	}
 
@@ -206,40 +206,40 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 	public function registerResellerNavbar(ResellerNavbarRegistry $registry): void {
 		$registry->add((new NavbarItem('billing'))
 			->url('#')
-			->label('', 'Payments & Billing')
+			->label('billing_reseller_nav_title', 'Payments & Billing')
 			->icon('ti tabler-credit-card')
 			->order(250));
 
 		$registry->add((new NavbarItem('billing.overview'))
 			->parent('billing')
 			->url('billing')
-			->label('', 'Overview & Wallet')
+			->label('billing_reseller_nav_overview', 'Overview & Wallet')
 			->order(10));
 
 		$registry->add((new NavbarItem('billing.buy'))
 			->parent('billing')
 			->url('billing_buy')
-			->label('', 'Buy Points')
+			->label('billing_reseller_nav_buy', 'Buy Points')
 			->order(20));
 
 		$registry->add((new NavbarItem('billing.methods'))
 			->parent('billing')
 			->url('billing_methods')
-			->label('', 'My Payment Methods')
+			->label('billing_reseller_nav_methods', 'My Payment Methods')
 			->permissions(['create_sub_resellers'])
 			->order(30));
 
 		$registry->add((new NavbarItem('billing.orders'))
 			->parent('billing')
 			->url('billing_orders')
-			->label('', 'Sub-Reseller Orders')
+			->label('billing_reseller_nav_orders', 'Sub-Reseller Orders')
 			->permissions(['create_sub_resellers'])
 			->order(40));
 
 		$registry->add((new NavbarItem('billing.my_orders'))
 			->parent('billing')
 			->url('billing_my_orders')
-			->label('', 'My Orders History')
+			->label('billing_reseller_nav_my_orders', 'My Orders History')
 			->order(50));
 	}
 }

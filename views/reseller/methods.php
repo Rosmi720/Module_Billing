@@ -1,39 +1,41 @@
 <?php
 use XcVm\Core\Util\LayoutRenderer;
+use XcVm\Core\Localization\Translator;
 
 /** @var array $methods */
+$language = Translator::class;
 ?>
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-1"><i class="ti tabler-wallet me-2"></i>My Payment Methods</h4>
-            <p class="text-muted mb-0">Configure payment options and transfer accounts that your sub-resellers see when purchasing points.</p>
+            <h4 class="fw-bold mb-1"><i class="ti tabler-wallet me-2"></i><?= htmlspecialchars($language::get('billing_reseller_nav_methods')); ?></h4>
+            <p class="text-muted mb-0"><?= htmlspecialchars($language::get('billing_reseller_hub_desc')); ?></p>
         </div>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-primary" id="btnAddNewMethod">
-                <i class="ti tabler-plus me-1"></i> Add New Method
+                <i class="ti tabler-plus me-1"></i> <?= htmlspecialchars($language::get('billing_admin_add_method')); ?>
             </button>
             <a href="billing" class="btn btn-outline-secondary">
-                <i class="ti tabler-arrow-left me-1"></i> Back to Wallet
+                <i class="ti tabler-arrow-left me-1"></i> <?= htmlspecialchars($language::get('billing_subreseller_back_wallet')); ?>
             </a>
         </div>
     </div>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-transparent border-bottom">
-            <h5 class="card-title mb-0"><i class="ti tabler-list me-2"></i>Configured Payment Methods</h5>
+            <h5 class="card-title mb-0"><i class="ti tabler-list me-2"></i><?= htmlspecialchars($language::get('billing_reseller_configured_methods')); ?></h5>
         </div>
         <div class="card-datatable table-responsive">
             <table class="table table-hover align-middle mb-0" id="resellerMethodsTable" style="width:100%">
                 <thead class="table-light">
                     <tr>
-                        <th>Method Name</th>
+                        <th><?= htmlspecialchars($language::get('billing_common_payment_method')); ?></th>
                         <th>Tag / Slug</th>
-                        <th>Exchange Rate</th>
-                        <th>Order Limits</th>
-                        <th>Instructions Preview</th>
-                        <th>Status</th>
-                        <th class="text-end no-sort">Actions</th>
+                        <th><?= htmlspecialchars($language::get('billing_common_rate')); ?></th>
+                        <th><?= htmlspecialchars($language::get('billing_reseller_limits')); ?></th>
+                        <th><?= htmlspecialchars($language::get('billing_subreseller_transfer_instructions')); ?></th>
+                        <th><?= htmlspecialchars($language::get('billing_common_status')); ?></th>
+                        <th class="text-end no-sort"><?= htmlspecialchars($language::get('billing_common_actions')); ?></th>
                     </tr>
                 </thead>
                 <tbody>

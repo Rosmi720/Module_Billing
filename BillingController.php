@@ -23,6 +23,7 @@ class BillingController {
 
 	public function __construct() {
 		$this->viewsPath = __DIR__ . '/views';
+		BillingTranslator::init();
 	}
 
 	// ───────────────────────────────────────────────────────────
@@ -39,6 +40,8 @@ class BillingController {
 	 */
 	protected function render(string $scope, string $title, string $view, array $vars = []): void {
 		global $rUserInfo, $rSettings, $rMobile, $rServers, $rPermissions, $_STATUS;
+		BillingTranslator::init();
+		$language = Translator::class;
 		extract($vars);
 
 		LayoutRenderer::renderHeader($scope, ['_TITLE' => $title]);
@@ -50,7 +53,7 @@ class BillingController {
 	 */
 	public function adminOverview(): void {
 		global $rUserInfo, $rSettings, $rMobile;
-		$_TITLE = 'Billing & Points Overview';
+		$_TITLE = Translator::get('billing_admin_overview_title');
 
 		$stats = BillingService::getOverviewStats(null);
 		$recentOrders = BillingService::getOrders([], 10, 0);
@@ -63,7 +66,7 @@ class BillingController {
 	 */
 	public function adminResellers(): void {
 		global $rUserInfo, $rSettings, $rMobile;
-		$_TITLE = 'Resellers Billing Directory';
+		$_TITLE = Translator::get('billing_admin_resellers_title');
 
 		$resellers = BillingService::getResellerDirectory();
 
@@ -75,7 +78,7 @@ class BillingController {
 	 */
 	public function adminOrders(): void {
 		global $rUserInfo, $rSettings, $rMobile;
-		$_TITLE = 'All Purchase Orders';
+		$_TITLE = Translator::get('billing_admin_orders_title');
 
 		$status = RequestManager::get('status') ?: '';
 		$search = RequestManager::get('search') ?: '';
@@ -97,7 +100,7 @@ class BillingController {
 	 */
 	public function adminMethods(): void {
 		global $rUserInfo, $rSettings, $rMobile;
-		$_TITLE = 'Payment Methods Management';
+		$_TITLE = Translator::get('billing_admin_methods_title');
 
 		$allMethods = BillingService::getPaymentMethods(null);
 		$adminMethods = [];
@@ -134,7 +137,7 @@ class BillingController {
 		$canManageSubResellers = BillingService::canManageSubResellers($userId, $currentUser, $rPermissions);
 
 		if ($canManageSubResellers) {
-			$_TITLE = 'Payments & Billing';
+			$_TITLE = Translator::get('billing_reseller_hub_title');
 			$stats = BillingService::getOverviewStats($userId);
 			$pendingOrders = BillingService::getOrders(['seller_id' => $userId, 'status' => 'pending'], 10, 0);
 			$methods = BillingService::getPaymentMethods($userId);
@@ -142,7 +145,7 @@ class BillingController {
 
 			$this->render('reseller', $_TITLE, 'reseller/overview', compact('stats', 'pendingOrders', 'methods', 'myPurchases', 'currentUser', 'userId', 'canManageSubResellers'));
 		} else {
-			$_TITLE = 'Payments & Points';
+			$_TITLE = Translator::get('billing_subreseller_wallet_title');
 			$stats = BillingService::getSubResellerOverview($userId);
 			$orders = BillingService::getOrders(['user_id' => $userId], 10, 0);
 			$parentMethods = BillingService::getPaymentMethods($ownerId, true);
@@ -165,7 +168,7 @@ class BillingController {
 			exit;
 		}
 
-		$_TITLE = 'Configure Payment Methods';
+		$_TITLE = Translator::get('billing_reseller_nav_methods');
 		$methods = BillingService::getPaymentMethods($userId);
 
 		$this->render('reseller', $_TITLE, 'reseller/methods', compact('methods'));
@@ -184,7 +187,7 @@ class BillingController {
 			exit;
 		}
 
-		$_TITLE = 'Sub-Reseller Purchase Orders';
+		$_TITLE = Translator::get('billing_reseller_nav_orders');
 		$status = RequestManager::get('status') ?: '';
 		$filters = ['seller_id' => $userId];
 		if ($status !== '') $filters['status'] = $status;
@@ -202,7 +205,7 @@ class BillingController {
 		$currentUser = $rUserInfo ?? [];
 		$userId = intval($currentUser['id'] ?? 0);
 		$ownerId = intval($currentUser['owner_id'] ?? 0);
-		$_TITLE = 'Buy Points';
+		$_TITLE = Translator::get('billing_subreseller_buy_title');
 
 		// If user is a main reseller (owner_id <= 1), seller is Platform Admin (0).
 		// If user is a sub-reseller (owner_id > 1), seller is their direct Parent Distributor (owner_id).
@@ -223,7 +226,7 @@ class BillingController {
 		global $rUserInfo, $rSettings, $rMobile;
 		$currentUser = $rUserInfo ?? [];
 		$userId = intval($currentUser['id'] ?? 0);
-		$_TITLE = 'My Points Orders';
+		$_TITLE = Translator::get('billing_subreseller_orders_history_title');
 
 		$orders = BillingService::getOrders(['user_id' => $userId], 50, 0);
 

@@ -1,5 +1,6 @@
 <?php
 use XcVm\Core\Util\LayoutRenderer;
+use XcVm\Core\Localization\Translator;
 
 /**
  * @var array  $adminMethods
@@ -10,19 +11,20 @@ use XcVm\Core\Util\LayoutRenderer;
 $adminMethods = $adminMethods ?? array_filter($methods ?? [], fn($m) => (int) ($m['reseller_id'] ?? 0) === 0);
 $resellerMethods = $resellerMethods ?? array_filter($methods ?? [], fn($m) => (int) ($m['reseller_id'] ?? 0) > 0);
 $activeType = $activeType ?? (($_GET['type'] ?? 'admin') === 'reseller' ? 'reseller' : 'admin');
+$language = Translator::class;
 ?>
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h4 class="fw-bold mb-1"><i class="ti tabler-settings me-2"></i>Payment Methods Management</h4>
-            <p class="text-muted mb-0">Separate oversight for system-wide Admin methods and Reseller-configured methods.</p>
+            <h4 class="fw-bold mb-1"><i class="ti tabler-settings me-2"></i><?= htmlspecialchars($language::get('billing_admin_methods_title')); ?></h4>
+            <p class="text-muted mb-0"><?= htmlspecialchars($language::get('billing_admin_methods_desc')); ?></p>
         </div>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-primary" id="btnOpenAddMethod">
-                <i class="ti tabler-plus me-1"></i> Add Admin Method
+                <i class="ti tabler-plus me-1"></i> <?= htmlspecialchars($language::get('billing_admin_add_method')); ?>
             </button>
             <a href="billing" class="btn btn-outline-secondary">
-                <i class="ti tabler-arrow-left me-1"></i> Back to Billing
+                <i class="ti tabler-arrow-left me-1"></i> <?= htmlspecialchars($language::get('billing_common_back_billing')); ?>
             </a>
         </div>
     </div>
@@ -96,14 +98,14 @@ $activeType = $activeType ?? (($_GET['type'] ?? 'admin') === 'reseller' ? 'resel
         <li class="nav-item">
             <button class="nav-link <?= ($activeType === 'admin') ? 'active' : ''; ?> d-flex align-items-center" id="tab-admin-methods" data-bs-toggle="pill" data-bs-target="#pane-admin-methods" type="button" role="tab">
                 <i class="ti tabler-shield-lock me-2"></i>
-                <span class="fw-semibold">Admin Methods</span>
+                <span class="fw-semibold"><?= htmlspecialchars($language::get('billing_admin_nav_methods_admin')); ?></span>
                 <span class="badge bg-primary ms-2 rounded-pill"><?= count($adminMethods); ?></span>
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link <?= ($activeType === 'reseller') ? 'active' : ''; ?> d-flex align-items-center" id="tab-reseller-methods" data-bs-toggle="pill" data-bs-target="#pane-reseller-methods" type="button" role="tab">
                 <i class="ti tabler-users me-2"></i>
-                <span class="fw-semibold">Reseller Methods</span>
+                <span class="fw-semibold"><?= htmlspecialchars($language::get('billing_admin_nav_methods_reseller')); ?></span>
                 <span class="badge bg-label-info ms-2 rounded-pill"><?= count($resellerMethods); ?></span>
             </button>
         </li>
@@ -116,11 +118,11 @@ $activeType = $activeType ?? (($_GET['type'] ?? 'admin') === 'reseller' ? 'resel
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title mb-0"><i class="ti tabler-shield-lock me-2 text-primary"></i>System & Admin Payment Methods</h5>
-                        <small class="text-muted">Global methods managed directly by administrators.</small>
+                        <h5 class="card-title mb-0"><i class="ti tabler-shield-lock me-2 text-primary"></i><?= htmlspecialchars($language::get('billing_admin_methods_system_title')); ?></h5>
+                        <small class="text-muted"><?= htmlspecialchars($language::get('billing_admin_methods_system_desc')); ?></small>
                     </div>
                     <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('btnOpenAddMethod').click()">
-                        <i class="ti tabler-plus me-1"></i> Add Admin Method
+                        <i class="ti tabler-plus me-1"></i> <?= htmlspecialchars($language::get('billing_admin_add_method')); ?>
                     </button>
                 </div>
                 <div class="card-datatable table-responsive">
@@ -128,13 +130,13 @@ $activeType = $activeType ?? (($_GET['type'] ?? 'admin') === 'reseller' ? 'resel
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>Method</th>
+                                <th><?= htmlspecialchars($language::get('billing_common_payment_method')); ?></th>
                                 <th>Slug</th>
-                                <th>Exchange Rate</th>
-                                <th>Min / Max Points</th>
-                                <th>Status</th>
-                                <th>Updated</th>
-                                <th class="text-end no-sort">Actions</th>
+                                <th><?= htmlspecialchars($language::get('billing_common_rate')); ?></th>
+                                <th><?= htmlspecialchars($language::get('billing_reseller_limits')); ?></th>
+                                <th><?= htmlspecialchars($language::get('billing_common_status')); ?></th>
+                                <th><?= htmlspecialchars($language::get('billing_common_date')); ?></th>
+                                <th class="text-end no-sort"><?= htmlspecialchars($language::get('billing_common_actions')); ?></th>
                             </tr>
                         </thead>
                         <tbody>

@@ -1,7 +1,9 @@
 # XC_VM Billing & Points Management Module
 
+[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/Rosmi720/Module_Billing/releases)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue.svg)](https://php.net/)
 [![XC_VM Architecture](https://img.shields.io/badge/XC__VM-Modular%20Monolith-orange.svg)](https://github.com/Vateron-Media/XC_VM)
+[![Languages](https://img.shields.io/badge/Languages-8%20Supported-brightgreen.svg)](#multilingual--internationalization-i18n-engine)
 [![Security Standard](https://img.shields.io/badge/Security-Zero--Trust%20Hardened-green.svg)](#security-architecture--threat-model)
 [![License](https://img.shields.io/badge/License-AGPL--3.0-purple.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 
@@ -30,6 +32,7 @@ This module provides a multi-tier financial ecosystem enabling **Platform Admini
 5. [Database Schema](#database-schema)
 6. [Installation & Lifecycle](#installation--lifecycle)
 7. [Automated Security Verification](#automated-security-verification)
+8. [Multilingual & Internationalization (i18n) Engine](#multilingual--internationalization-i18n-engine)
 
 ---
 
@@ -407,6 +410,32 @@ php -d opcache.enable_cli=0 /home/xc_vm/Modules/billing/tests/test_complete_secu
 ====================================================================
 >>> VERDICT: ALL ZERO-TRUST SECURITY CONTROLS VERIFIED & PASSED <<<
 ```
+
+---
+
+## Multilingual & Internationalization (i18n) Engine
+
+The Billing Module features an enterprise-grade internationalization system covering **all 8 official languages** supported by the XC_VM platform:
+
+| Code | Language | Dictionary File | Status |
+| :---: | :--- | :--- | :---: |
+| `en` | **English** | `lang/en.ini` | Base Reference (146 keys) |
+| `ar` | **العربية (Arabic)** | `lang/ar.ini` | Native Translation + Full RTL |
+| `ru` | **Русский (Russian)** | `lang/ru.ini` | Native Translation |
+| `de` | **Deutsch (German)** | `lang/de.ini` | Native Translation |
+| `fr` | **Français (French)** | `lang/fr.ini` | Native Translation |
+| `es` | **Español (Spanish)** | `lang/es.ini` | Native Translation |
+| `pt` | **Português (Portuguese)** | `lang/pt.ini` | Native Translation |
+| `bg` | **Български (Bulgarian)** | `lang/bg.ini` | Native Translation |
+
+### Zero-Core Modification Bridge Architecture
+To comply with strict module boundary principles, the module **does not modify any core files**:
+1. At module boot (`BillingModule::boot()`), the `BillingTranslator` service dynamically reads the user's active session language from `\XcVm\Core\Localization\Translator::current()`.
+2. It loads the corresponding `Modules/billing_8efdd/lang/{lang}.ini` dictionary (with instant fallback to `en.ini` for missing keys).
+3. Using an in-memory reflection bridge, it injects module strings into:
+   - `Translator::$translations`: Allowing `$language::get('billing_...')` to translate all navbar titles, views, tables, and modal dialogs on the fly.
+   - `Translator::$enTranslations`: Making all 146 module translation keys automatically visible and editable inside the Admin Panel's native **Settings > Translations** editor (`admin/translations`).
+4. **RTL Support**: When Arabic (`ar`) is selected, the platform automatically activates Right-to-Left styling (`dir="rtl"`) with seamless bidirectional alignment across all billing dashboards.
 
 ---
 
