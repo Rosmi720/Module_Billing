@@ -949,14 +949,20 @@ class BillingService {
 				u.credits,
 				u.status,
 				u.owner_id,
-				g.group_name,
+				u.date_registered,
+				u.last_login,
+				COALESCE(g.group_name, 'Reseller') AS group_name,
+				COALESCE(g.is_reseller, 0) AS is_reseller,
+				COALESCE(g.is_admin, 0) AS is_admin,
+				(SELECT p.username FROM `users` p WHERE p.id = u.owner_id) AS parent_username,
 				(SELECT COUNT(*) FROM `users` sub WHERE sub.owner_id = u.id) AS sub_reseller_count,
+				(SELECT COUNT(*) FROM `lines` l WHERE l.member_id = u.id) AS lines_count,
 				(SELECT COUNT(*) FROM `billing_payment_methods` m WHERE m.reseller_id = u.id) AS methods_count,
 				(SELECT COUNT(*) FROM `billing_orders` o WHERE o.seller_id = u.id) AS orders_count,
 				(SELECT SUM(o2.points_requested) FROM `billing_orders` o2 WHERE o2.seller_id = u.id AND o2.status = 'approved') AS total_points_sold
 			FROM `users` u
-			INNER JOIN `users_groups` g ON g.group_id = u.member_group_id
-			WHERE g.is_reseller = 1
+			LEFT JOIN `users_groups` g ON g.group_id = u.member_group_id
+			WHERE (g.is_reseller = 1 OR u.owner_id > 0 OR (u.member_group_id IS NOT NULL AND u.member_group_id > 1))
 			ORDER BY u.id ASC;"
 		);
 		return $db->get_rows() ?: [];

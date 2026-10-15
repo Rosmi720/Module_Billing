@@ -119,6 +119,26 @@ class BillingController {
 		$this->render('admin', $_TITLE, 'admin/methods', compact('adminMethods', 'resellerMethods', 'activeType', 'methods', 'allMethods'));
 	}
 
+	/**
+	 * Admin: Comprehensive Financial & Profit Analytics Hub.
+	 */
+	public function adminFinance(): void {
+		global $rUserInfo, $rSettings, $rMobile;
+		BillingTranslator::init();
+		$_TITLE = Translator::get('billing_finance_admin_title');
+		$GLOBALS['xmNewuiVendors'] = ['apexcharts'];
+
+		$currency = RequestManager::get('currency') ?: null;
+		$overview = BillingFinanceService::getFinanceOverview(null, null, null, $currency);
+		$gateways = BillingFinanceService::getGatewaysBreakdown(null);
+		$topPackages = BillingFinanceService::getTopPackagesBreakdown(null);
+		$ledger = BillingFinanceService::getFinanceLedger([], 25, 0);
+		$totalLedgerCount = BillingFinanceService::countFinanceLedger([]);
+		$initialChart = BillingFinanceService::getTimeseriesData(null, 30, $currency);
+
+		$this->render('admin', $_TITLE, 'admin/finance', compact('overview', 'gateways', 'topPackages', 'ledger', 'totalLedgerCount', 'currency', 'initialChart'));
+	}
+
 	// ───────────────────────────────────────────────────────────
 	//  Reseller & Sub-Reseller Scope Pages (GET)
 	// ───────────────────────────────────────────────────────────
@@ -231,6 +251,35 @@ class BillingController {
 		$orders = BillingService::getOrders(['user_id' => $userId], 50, 0);
 
 		$this->render('reseller', $_TITLE, 'subreseller/my_orders', compact('orders', 'currentUser', 'userId'));
+	}
+
+	/**
+	 * Reseller: Financial Hub, Sales Ledger & Sub-Reseller Margins.
+	 */
+	public function resellerFinance(): void {
+		global $rUserInfo, $rPermissions, $rSettings, $rMobile;
+		BillingTranslator::init();
+		$currentUser = $rUserInfo ?? [];
+		$userId = intval($currentUser['id'] ?? 0);
+
+		if ($userId <= 0) {
+			header('Location: login');
+			exit;
+		}
+
+		$_TITLE = Translator::get('billing_finance_reseller_title');
+		$GLOBALS['xmNewuiVendors'] = ['apexcharts'];
+		$currency = RequestManager::get('currency') ?: null;
+
+		$overview = BillingFinanceService::getFinanceOverview($userId, null, null, $currency);
+		$gateways = BillingFinanceService::getGatewaysBreakdown($userId);
+		$topPackages = BillingFinanceService::getTopPackagesBreakdown($userId);
+		$ledger = BillingFinanceService::getFinanceLedger(['owner_id' => $userId], 25, 0);
+		$totalLedgerCount = BillingFinanceService::countFinanceLedger(['owner_id' => $userId]);
+		$myStatement = BillingFinanceService::getUserDetailedStatement($userId, $userId);
+		$initialChart = BillingFinanceService::getTimeseriesData($userId, 30, $currency);
+
+		$this->render('reseller', $_TITLE, 'reseller/finance', compact('overview', 'gateways', 'topPackages', 'ledger', 'totalLedgerCount', 'myStatement', 'currentUser', 'userId', 'currency', 'initialChart'));
 	}
 
 	/**
@@ -586,7 +635,7 @@ class BillingController {
 			$this->json(['status' => 'error', 'message' => 'Admin authorization required.']);
 		}
 
-		$resellerId = intval(RequestManager::get('reseller_id') ?? 0);
+		$resellerId = intval(RequestManager::get('reseller_id') ?: ($_GET['reseller_id'] ?? $_POST['reseller_id'] ?? 0));
 		$reseller = UserRepository::getRegisteredUserById($resellerId);
 
 		if (!$reseller) {
@@ -614,6 +663,182 @@ class BillingController {
 				'logs'    => $logs,
 			],
 		]);
+	}
+
+	/**
+	 * API: Get filtered financial overview statistics.
+	 */
+	public function apiFinanceStats(): void {
+		global $rUserInfo;
+		$user = $rUserInfo ?? [];
+		$userId = intval($user['id'] ?? 0);
+		$isAdmin = !empty($user['is_admin']) || (intval($user['member_group_id'] ?? 0) === 1);
+
+		if ($userId <= 0) {
+			$this->json(['status' => 'error', 'message' => 'Unauthorized session.']);
+		}
+
+		$startDate = RequestManager::get('start_date') ? intval(RequestManager::get('start_date')) : null;
+		$endDate = RequestManager::get('end_date') ? intval(RequestManager::get('end_date')) : null;
+		$currency = RequestManager::get('currency') ?: null;
+
+		$targetReseller = RequestManager::get('reseller_id');
+		if ($isAdmin) {
+			$resellerId = ($targetReseller !== null && $targetReseller !== '') ? intval($targetReseller) : null;
+		} else {
+			$resellerId = $userId;
+		}
+
+		$overview = BillingFinanceService::getFinanceOverview($resellerId, $startDate, $endDate, $currency);
+		$gateways = BillingFinanceService::getGatewaysBreakdown($resellerId, $startDate, $endDate);
+		$topPackages = BillingFinanceService::getTopPackagesBreakdown($resellerId, $startDate, $endDate);
+
+		$this->json([
+			'status' => 'success',
+			'data'   => [
+				'overview'     => $overview,
+				'gateways'     => $gateways,
+				'top_packages' => $topPackages,
+			],
+		]);
+	}
+
+	/**
+	 * API: Get timeseries daily chart data for finance graphs.
+	 */
+	public function apiFinanceChart(): void {
+		global $rUserInfo;
+		$user = $rUserInfo ?? [];
+		$userId = intval($user['id'] ?? 0);
+		$isAdmin = !empty($user['is_admin']) || (intval($user['member_group_id'] ?? 0) === 1);
+
+		if ($userId <= 0) {
+			$this->json(['status' => 'error', 'message' => 'Unauthorized session.']);
+		}
+
+		$days = RequestManager::get('days') ? intval(RequestManager::get('days')) : 30;
+		$currency = RequestManager::get('currency') ?: null;
+
+		$targetReseller = RequestManager::get('reseller_id');
+		$resellerId = ($isAdmin && $targetReseller !== null && $targetReseller !== '') ? intval($targetReseller) : ($isAdmin ? null : $userId);
+
+		$chart = BillingFinanceService::getTimeseriesData($resellerId, $days, $currency);
+		$this->json(['status' => 'success', 'data' => $chart]);
+	}
+
+	/**
+	 * API: Get paginated financial ledger rows with filters.
+	 */
+	public function apiFinanceLedger(): void {
+		global $rUserInfo;
+		$user = $rUserInfo ?? [];
+		$userId = intval($user['id'] ?? 0);
+		$isAdmin = !empty($user['is_admin']) || (intval($user['member_group_id'] ?? 0) === 1);
+
+		if ($userId <= 0) {
+			$this->json(['status' => 'error', 'message' => 'Unauthorized session.']);
+		}
+
+		$filters = [];
+		if (!$isAdmin) {
+			$filters['owner_id'] = $userId;
+		} else {
+			$ownerId = RequestManager::get('owner_id');
+			if ($ownerId !== null && $ownerId !== '') {
+				$filters['owner_id'] = intval($ownerId);
+			}
+		}
+
+		$search = RequestManager::get('search');
+		if ($search !== null && trim($search) !== '') {
+			$filters['search'] = trim($search);
+		}
+
+		$groupType = RequestManager::get('group_type');
+		if ($groupType !== null && trim($groupType) !== '') {
+			$filters['group_type'] = trim($groupType);
+		}
+
+		$limit = RequestManager::get('limit') ? intval(RequestManager::get('limit')) : 25;
+		$page = RequestManager::get('page') ? intval(RequestManager::get('page')) : 1;
+		$offset = max(0, ($page - 1) * $limit);
+
+		$rows = BillingFinanceService::getFinanceLedger($filters, $limit, $offset);
+		$total = BillingFinanceService::countFinanceLedger($filters);
+
+		$this->json([
+			'status' => 'success',
+			'data'   => $rows,
+			'total'  => $total,
+			'page'   => $page,
+			'limit'  => $limit,
+		]);
+	}
+
+	/**
+	 * API: Get itemized statement of account for a specific user.
+	 */
+	public function apiFinanceStatement(): void {
+		global $rUserInfo;
+		$user = $rUserInfo ?? [];
+		$userId = intval($user['id'] ?? 0);
+		$isAdmin = !empty($user['is_admin']) || (intval($user['member_group_id'] ?? 0) === 1);
+
+		if ($userId <= 0) {
+			$this->json(['status' => 'error', 'message' => 'Unauthorized session.']);
+		}
+
+		$targetUserId = intval(RequestManager::get('user_id') ?: 0);
+		if ($targetUserId <= 0) {
+			$targetUserId = $userId;
+		}
+
+		$scopeResellerId = $isAdmin ? null : $userId;
+		$statement = BillingFinanceService::getUserDetailedStatement($targetUserId, $scopeResellerId);
+
+		if (!$statement) {
+			$this->json(['status' => 'error', 'message' => 'User statement not found or unauthorized access.']);
+		}
+
+		$this->json(['status' => 'success', 'data' => $statement]);
+	}
+
+	/**
+	 * API: Export financial ledger data as CSV download.
+	 */
+	public function apiFinanceExport(): void {
+		global $rUserInfo;
+		$user = $rUserInfo ?? [];
+		$userId = intval($user['id'] ?? 0);
+		$isAdmin = !empty($user['is_admin']) || (intval($user['member_group_id'] ?? 0) === 1);
+
+		if ($userId <= 0) {
+			http_response_code(401);
+			echo 'Unauthorized session.';
+			exit;
+		}
+
+		$filters = [];
+		if (!$isAdmin) {
+			$filters['owner_id'] = $userId;
+		}
+
+		$search = RequestManager::get('search');
+		if ($search !== null && trim($search) !== '') {
+			$filters['search'] = trim($search);
+		}
+
+		$csv = BillingFinanceService::exportLedgerCsv($filters);
+
+		if (ob_get_length()) {
+			ob_clean();
+		}
+		header('Content-Type: text/csv; charset=UTF-8');
+		header('Content-Disposition: attachment; filename="finance_ledger_' . date('Ymd_His') . '.csv"');
+		header('Pragma: no-cache');
+		header('Expires: 0');
+		echo $csv;
+		exit;
 	}
 
 	// ───────────────────────────────────────────────────────────

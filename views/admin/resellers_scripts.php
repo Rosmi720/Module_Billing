@@ -13,10 +13,11 @@
             $.fn.dataTable.ext.errMode = 'none';
         }
 
+        let table = null;
         if ($.fn.DataTable && $('#resellersTable').length) {
-            $('#resellersTable').DataTable({
+            table = $('#resellersTable').DataTable({
                 responsive: true,
-                order: [[3, 'desc']], // Sorted by Current Points desc
+                order: [[4, 'desc']], // Sorted by Current Points desc
                 columnDefs: [
                     { targets: 'no-sort', orderable: false, searchable: false }
                 ],
@@ -38,10 +39,24 @@
                     topEnd: 'search'
                 }
             });
+
+            $('#filterResellerLevel').on('change', function() {
+                const val = $(this).val();
+                if (table) {
+                    table.column(2).search(val).draw();
+                }
+            });
+
+            $('#filterResellerGroup').on('change', function() {
+                const val = $(this).val();
+                if (table) {
+                    table.column(3).search(val).draw();
+                }
+            });
         }
 
         const drillModalEl = document.getElementById('drilldownModal');
-        const drillModal = drillModalEl ? new bootstrap.Modal(drillModalEl) : null;
+        const drillModal = drillModalEl && window.bootstrap ? new bootstrap.Modal(drillModalEl) : null;
 
         $(document).on('click', '.drilldown-btn', function() {
             const resellerId = this.getAttribute('data-id');
@@ -51,7 +66,11 @@
             document.getElementById('drillResellerId').textContent = resellerId;
             document.getElementById('drillResellerBalance').textContent = '...';
 
-            if (drillModal) drillModal.show();
+            if (drillModal) {
+                drillModal.show();
+            } else if (window.jQuery && $('#drilldownModal').modal) {
+                $('#drilldownModal').modal('show');
+            }
 
             fetch('api?action=billing_drilldown&reseller_id=' + encodeURIComponent(resellerId))
                 .then(r => r.json())
@@ -145,5 +164,3 @@
     });
 })();
 </script>
-</body>
-</html>

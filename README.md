@@ -1,15 +1,15 @@
 # XC_VM Billing & Points Management Module
 
-[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/Rosmi720/Module_Billing/releases)
+[![Version](https://img.shields.io/badge/Version-1.2.0-blue.svg)](https://github.com/Rosmi720/Module_Billing/releases)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue.svg)](https://php.net/)
 [![XC_VM Architecture](https://img.shields.io/badge/XC__VM-Modular%20Monolith-orange.svg)](https://github.com/Vateron-Media/XC_VM)
 [![Languages](https://img.shields.io/badge/Languages-8%20Supported-brightgreen.svg)](#multilingual--internationalization-i18n-engine)
 [![Security Standard](https://img.shields.io/badge/Security-Zero--Trust%20Hardened-green.svg)](#security-architecture--threat-model)
 [![License](https://img.shields.io/badge/License-AGPL--3.0-purple.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 
-A production-grade, enterprise-ready **Billing, Points Transfer, and Payment Gateway Management Module** built specifically for the **XC_VM** IPTV management platform.
+A production-grade, enterprise-ready **Billing, Points Transfer, Financial Analytics, and Payment Gateway Management Module** built specifically for the **XC_VM** IPTV management platform.
 
-This module provides a multi-tier financial ecosystem enabling **Platform Administrators**, **Master Resellers (Distributors)**, and **Sub-Resellers** to configure custom payment methods, execute self-service point purchase workflows, review payment receipts, and atomically transfer credits with zero-trust concurrency protection.
+This module provides a multi-tier financial ecosystem enabling **Platform Administrators**, **Master Resellers (Distributors)**, and **Sub-Resellers** to configure custom payment methods, track cash flow & revenue velocity via the **Finance & Accounting Hub**, execute self-service point purchase workflows, review payment receipts, audit sub-resellers, and atomically transfer credits with zero-trust concurrency protection.
 
 ---
 

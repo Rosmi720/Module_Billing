@@ -84,6 +84,7 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 			$r->any('resellers', [BillingController::class, 'adminResellers']);
 			$r->any('methods', [self::class, 'routeMethods']);
 			$r->any('orders', [self::class, 'routeOrders']);
+			$r->any('finance', [self::class, 'routeFinance']);
 			$r->any('buy', [BillingController::class, 'subresellerBuy']);
 			$r->any('my_orders', [BillingController::class, 'subresellerOrders']);
 			$r->any('receipt', [BillingController::class, 'viewReceipt']);
@@ -99,6 +100,11 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 		$router->api('billing_approve_order', [BillingController::class, 'apiApproveOrder']);
 		$router->api('billing_reject_order', [BillingController::class, 'apiRejectOrder']);
 		$router->api('billing_drilldown', [BillingController::class, 'apiDrilldown']);
+		$router->api('billing_finance_stats', [BillingController::class, 'apiFinanceStats']);
+		$router->api('billing_finance_chart', [BillingController::class, 'apiFinanceChart']);
+		$router->api('billing_finance_ledger', [BillingController::class, 'apiFinanceLedger']);
+		$router->api('billing_finance_statement', [BillingController::class, 'apiFinanceStatement']);
+		$router->api('billing_finance_export', [BillingController::class, 'apiFinanceExport']);
 	}
 
 	/**
@@ -160,6 +166,19 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 	}
 
 	/**
+	 * Context-aware entry for /billing/finance.
+	 */
+	public static function routeFinance(): void {
+		$controller = new BillingController();
+		$scope = self::resolveScope();
+		if ($scope === 'reseller') {
+			$controller->resellerFinance();
+		} else {
+			$controller->adminFinance();
+		}
+	}
+
+	/**
 	 * Register items in the Admin Navbar.
 	 */
 	public function registerNavbar(NavbarRegistry $registry): void {
@@ -174,6 +193,12 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 			->url('billing')
 			->label('billing_admin_nav_overview', 'Overview & Stats')
 			->order(10));
+
+		$registry->add((new NavbarItem('billing.finance'))
+			->parent('billing')
+			->url('billing_finance')
+			->label('billing_admin_nav_finance', 'Finance & Profits')
+			->order(15));
 
 		$registry->add((new NavbarItem('billing.resellers'))
 			->parent('billing')
@@ -215,6 +240,12 @@ class BillingModule extends BaseModule implements RouteProviderInterface, Navbar
 			->url('billing')
 			->label('billing_reseller_nav_overview', 'Overview & Wallet')
 			->order(10));
+
+		$registry->add((new NavbarItem('billing.finance'))
+			->parent('billing')
+			->url('billing_finance')
+			->label('billing_reseller_nav_finance', 'Financial Ledger')
+			->order(15));
 
 		$registry->add((new NavbarItem('billing.buy'))
 			->parent('billing')
